@@ -1,6 +1,9 @@
-from .service import SocketRouter, SocketBroker
+from .service import SocketRouter, SocketBroker, StandData
+from .deps import authorize_stand
 
 __all__ = [
     "SocketRouter",
-    "SocketBroker"
+    "SocketBroker",
+    "authorize_stand",
+    "StandData"
 ]
