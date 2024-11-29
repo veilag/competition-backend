@@ -15,3 +15,10 @@ router = APIRouter(
 )
 async def handle_app():
     return FileResponse('templates/app.html')
+
+
+@router.get(
+    path="/client"
+)
+async def handle_client():
+    return FileResponse('templates/client.html')

@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport"
+        content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Connection test</title>
+</head>
+<body>
+  <input type="text" placeholder="x-telegram-auth">
+  <a>socket</a>
+
+  <script>
+      const DOMAIN = "rnvkj-89-191-243-142.a.free.pinggy.link"
+
+      const button = document.querySelector("a")
+      const input = document.querySelector("input")
+
+      button.addEventListener("click", () => {
+        const decodedString = encodeURIComponent(input.value);
+        console.log(decodedString)
+
+        const socket = new WebSocket(`ws://${DOMAIN}/connect_user?token=${encodeURIComponent(input.value)}`);
+
+        socket.onopen = event => {
+            socket.send(JSON.stringify({
+            "event": "NEW_USER_IN_PLACE",
+            "data": {
+                "name": "Рамиль",
+                "surname": "Галиев",
+                "competition": "Искусственный интеллект"
+            }
+          }))
+        }
+      })
+  </script>
+</body>
+</html>

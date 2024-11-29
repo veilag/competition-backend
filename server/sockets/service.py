@@ -54,10 +54,16 @@ class SocketBroker:
         self.routers: List[SocketRouter] = []
 
     async def connect(self, websocket: WebSocket, user_data: WebAppInitData):
+        if not self.telegram_id_free(user_data.user.id):
+            self.raise_and_disconnect()
+
         await websocket.accept()
         self.active_connections[websocket] = user_data
 
     async def connect_stand(self, websocket: WebSocket, stand_data: StandData):
+        if not self.stand_id_free(stand_data["id"]):
+            self.raise_and_disconnect()
+
         await websocket.accept()
         self.active_stand_connections[websocket] = stand_data
 
@@ -75,10 +81,16 @@ class SocketBroker:
         for connection in self.active_connections:
             await connection.send_json(message)
 
-    def stand_id_free(self, id: str):
+    def stand_id_free(self, stand_id: str):
         for connection in self.active_stand_connections:
-            stand_id = self.active_stand_connections[connection]["id"]
-            if stand_id == id:
+            if self.active_stand_connections[connection]["id"] == stand_id:
+                return False
+
+        return True
+
+    def telegram_id_free(self, telegram_id: int):
+        for connection in self.active_connections:
+            if self.active_connections[connection].user.id == telegram_id:
                 return False
 
         return True

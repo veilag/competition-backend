@@ -63,21 +63,19 @@ async def bot_webhook(update: dict):
 @app.websocket("/connect_user")
 async def handle_connection(
     websocket: WebSocket,
-    user_data: Annotated[WebAppInitData, Depends(authorize_user_connection)]
+    auth_data: Annotated[WebAppInitData, Depends(authorize_user_connection)]
 ):
-    await socket_broker.connect(websocket, user_data)
+    telegram_data, _ = auth_data
+    await socket_broker.connect(websocket, telegram_data)
     await socket_broker.handle_websocket(websocket)
 
 
 @app.websocket("/connect_stand")
 async def handle_stand_connection(
     websocket: WebSocket,
-    stand_data: Annotated[StandData, Depends(authorize_stand)]
+    auth_data: Annotated[StandData, Depends(authorize_stand)]
 ):
-    if not socket_broker.stand_id_free(stand_data["id"]):
-        socket_broker.raise_and_disconnect()
-
-    await socket_broker.connect_stand(websocket, stand_data)
+    await socket_broker.connect_stand(websocket, auth_data)
     await socket_broker.handle_websocket(websocket)
 
 
