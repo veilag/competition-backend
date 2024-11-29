@@ -10,7 +10,7 @@ class User(Base):
     __tablename__ = 'users'
 
     id = Column(Integer, primary_key=True, autoincrement=True)
-    hash_id = Column(String, unique=True, nullable=False)
+    public_id = Column(String, unique=True, nullable=False)
     telegram_id = Column(BigInteger, unique=True, nullable=False)
 
     name = Column(String, nullable=False)
@@ -21,7 +21,7 @@ class User(Base):
 
     in_place = Column(Boolean, nullable=False, default=False)
     approved = Column(Boolean, nullable=False, default=False)
-    competition_id = Column(Integer, ForeignKey('competitions.id'), nullable=False)
+    competition_id = Column(Integer, ForeignKey('competitions.id'), nullable=True)
 
     role = relationship("Role", back_populates="users")
     competition = relationship("Competition", back_populates="users")

@@ -1,18 +1,16 @@
-from fastapi import APIRouter, Depends
-from sqlalchemy.ext.asyncio import AsyncSession
-from ..database import get_db
-from sqlalchemy.future import select
+from fastapi import APIRouter
+from starlette.responses import FileResponse
 
-from ..models import User
-
-router = APIRouter()
+router = APIRouter(tags=["⚙️ Разное"])
 
 
 @router.get("/")
-async def handle_root(db: AsyncSession = Depends(get_db)):
-    result = await db.execute(select(User))
-    print(result.all())
-
+async def handle_root():
     return {
         "message": "success"
     }
+
+
+@router.get("/app")
+async def handle_app():
+    return FileResponse('templates/app.html')

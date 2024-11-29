@@ -1,21 +1,24 @@
 from typing import Annotated
-
 from aiogram.types import Update
 from aiogram.utils.web_app import WebAppInitData
-
 from .config import Config
 from .sockets import SocketBroker, StandData, authorize_stand
-from .routers import home_router, event_socket_router
+from .routers import home_router, event_socket_router, user_router
 from .database import init_db, init_db_in_dev, engine
 from .bot import bot, dp, authorize_user_connection
 from fastapi import FastAPI, WebSocket, Depends
 
 app = FastAPI(
     title="API для олимпиады",
-    version="1.0.0",
+    description="API доступен только с определенных доменов (Не касается тестирования и отладки)",
+    version=Config.VERSION,
     contact={
-        "name": "Галиев Рамиль",
-        "url": "https://t.me/veilag"
+        "name": Config.Credentials.CONTACT_NAME,
+        "url": Config.Credentials.CONTACT_SITE,
+        "email": Config.Credentials.CONTACT_EMAIL
+    },
+    swagger_ui_parameters={
+        "defaultModelsExpandDepth": -1
     }
 )
 
@@ -23,6 +26,9 @@ socket_broker = SocketBroker()
 socket_broker.register_router(event_socket_router)
 
 app.state.broker = socket_broker
+
+app.include_router(home_router)
+app.include_router(user_router, prefix="/users")
 
 WEBHOOK_PATH = f"/bot/{Config.TELEGRAM_TOKEN}"
 WEBHOOK_URL = f"{Config.DOMAIN}{WEBHOOK_PATH}"
@@ -37,14 +43,16 @@ async def on_startup():
     await init_db_in_dev()
 
     webhook_info = await bot.get_webhook_info()
-
     if webhook_info.url != WEBHOOK_URL:
         await bot.set_webhook(
             url=WEBHOOK_URL
         )
 
 
-@app.post(WEBHOOK_PATH)
+@app.post(
+    path=WEBHOOK_PATH,
+    include_in_schema=False
+)
 async def bot_webhook(update: dict):
     update = Update.model_validate(update, context={"bot": bot})
     await dp.feed_update(bot=bot, update=update)
@@ -75,6 +83,3 @@ async def handle_stand_connection(
 async def on_shutdown():
     await bot.session.close()
     await engine.dispose()
-
-
-app.include_router(home_router)

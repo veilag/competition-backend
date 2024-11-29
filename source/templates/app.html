@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>Hello, wolrd</title>
+  <meta name="viewport"
+        content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <script src="https://telegram.org/js/telegram-web-app.js?56"></script>
+</head>
+<body>
+  <div style="margin-top: 30px;">
+    <button>Fetch</button>
+  </div>
+
+  <script>
+    window.Telegram.WebApp.expand()
+    window.Telegram.WebApp.requestFullscreen()
+
+    console.log(window.Telegram.WebApp.initData)
+
+    const button = document.querySelector("button")
+
+    button.addEventListener("click", () => {
+        fetch("/users/me", {
+            method: "GET",
+            headers: {
+                "X-Telegram-Auth": window.Telegram.WebApp.initData
+            }
+        })
+            .then(res => res.json())
+            .then(data => console.log(data))
+    })
+  </script>
+</body>
+</html>
