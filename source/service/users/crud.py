@@ -10,7 +10,7 @@ from .schemas import UserCreate
 async def get_user_by_telegram_id(session: AsyncSession, telegram_id: int) -> User | None:
     result = await session.execute(
         select(User)
-        .options(joinedload(User.role), joinedload(User.competition))
+        .options(joinedload(User.role))
         .where(User.telegram_id == telegram_id)
     )
 

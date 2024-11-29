@@ -1,5 +1,6 @@
 from typing import Optional
 from pydantic import BaseModel
+from ..competitions.schemas import CompetitionModel
 
 
 class RoleModel(BaseModel):
@@ -18,7 +19,9 @@ class UserModel(BaseModel):
     surname: str
     in_place: bool
     approved: bool
+
     role: RoleModel
+    competition: Optional[CompetitionModel] = None
 
     class Config:
         from_attributes = True

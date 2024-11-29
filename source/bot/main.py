@@ -23,7 +23,7 @@ async def handle_start_message(message: Message) -> None:
         .button(
             text="Открыть приложением",
             web_app=WebAppInfo(
-                url=f"{Config.SERVER_DOMAIN}/templates/app" if Config.MODE == "DEBUG" else Config.MINIAPP_DOMAIN
+                url=f"{Config.SERVER_DOMAIN}/templates/app" if Config.MODE == "DEV" else Config.MINIAPP_DOMAIN
             )
         )
         .as_markup()

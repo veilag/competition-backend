@@ -13,7 +13,7 @@ class Competition(Base):
     description = Column(Text, nullable=True)
     state_id = Column(Integer, ForeignKey('states.id'), nullable=True)
     state = relationship("CompetitionState", back_populates="competitions")
-    users = relationship("User", back_populates="competitions")
+    users = relationship("User", back_populates="competition")
 
 
 class CompetitionState(Base):
