@@ -1,6 +1,6 @@
 from typing import Dict
 from aiogram.utils.web_app import WebAppInitData
-from source import StandData
+from ...sockets import StandData
 from source.sockets import SocketRouter
 from fastapi import WebSocket
 

@@ -1,4 +1,4 @@
-from ..database import Base
+from ...database import Base
 from sqlalchemy import Column, Integer, String, BigInteger, ForeignKey, Boolean
 from sqlalchemy.orm import relationship
 
@@ -17,8 +17,6 @@ class User(Base):
     surname = Column(String, nullable=False)
 
     role_id = Column(Integer, ForeignKey('roles.id'), nullable=False)
-    mentor_id = Column(Integer, nullable=True)
-
     in_place = Column(Boolean, nullable=False, default=False)
     approved = Column(Boolean, nullable=False, default=False)
     competition_id = Column(Integer, ForeignKey('competitions.id'), nullable=True)
@@ -42,5 +40,4 @@ class Role(Base):
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     name = Column(String, unique=True, nullable=False)
-
     users = relationship("User", back_populates="role")

@@ -2,10 +2,11 @@ from typing import Annotated
 from aiogram.types import Update
 from aiogram.utils.web_app import WebAppInitData
 from .config import Config
+from .service.auth.deps import authorize_user_connection
 from .sockets import SocketBroker, StandData, authorize_stand
-from .routers import home_router, event_socket_router, user_router
+from .service import templates_router, event_socket_router, user_router, competition_router
 from .database import init_db, init_db_in_dev, engine
-from .bot import bot, dp, authorize_user_connection
+from .bot import bot, dp
 from fastapi import FastAPI, WebSocket, Depends
 
 app = FastAPI(
@@ -27,11 +28,12 @@ socket_broker.register_router(event_socket_router)
 
 app.state.broker = socket_broker
 
-app.include_router(home_router)
-app.include_router(user_router, prefix="/users")
+app.include_router(user_router)
+app.include_router(competition_router)
+app.include_router(templates_router)
 
 WEBHOOK_PATH = f"/bot/{Config.TELEGRAM_TOKEN}"
-WEBHOOK_URL = f"{Config.DOMAIN}{WEBHOOK_PATH}"
+WEBHOOK_URL = f"{Config.SERVER_DOMAIN}{WEBHOOK_PATH}"
 
 
 @app.on_event("startup")

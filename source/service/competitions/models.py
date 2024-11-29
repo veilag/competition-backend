@@ -1,4 +1,4 @@
-from ..database import Base
+from ...database import Base
 from sqlalchemy import Column, Integer, String, Text, ForeignKey
 from sqlalchemy.orm import relationship
 
@@ -11,13 +11,12 @@ class Competition(Base):
     id = Column(Integer, primary_key=True, autoincrement=True)
     title = Column(String, nullable=False)
     description = Column(Text, nullable=True)
-    state_id = Column(Integer, ForeignKey('states.id'), nullable=True)  # Текущее состояние
+    state_id = Column(Integer, ForeignKey('states.id'), nullable=True)
+    state = relationship("CompetitionState", back_populates="competitions")
+    users = relationship("User", back_populates="competitions")
 
-    state = relationship("State", back_populates="competitions")
-    users = relationship("User", back_populates="competition")
 
-
-class State(Base):
+class CompetitionState(Base):
     """
     Состояние олимпиады
 
