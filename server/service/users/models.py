@@ -40,4 +40,5 @@ class Role(Base):
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     name = Column(String, unique=True, nullable=False)
+    title = Column(String, unique=True, nullable=False)
     users = relationship("User", back_populates="role")

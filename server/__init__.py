@@ -1,9 +1,11 @@
-from typing import Annotated
+from typing import Tuple
 from aiogram.types import Update
 from aiogram.utils.web_app import WebAppInitData
+
 from .config import Config
-from .service.auth.deps import authorize_user_connection
-from .sockets import SocketBroker, StandData, authorize_stand
+from .service.users.models import User
+from .service.auth.deps import authorize_user_connection, authorize_stand_connection
+from .sockets import SocketBroker, StandData
 from .service import templates_router, event_socket_router, user_router, competition_router
 from .database import init_db, init_db_in_dev, engine
 from .bot import bot, dp
@@ -11,7 +13,7 @@ from fastapi import FastAPI, WebSocket, Depends
 
 app = FastAPI(
     title="API для олимпиады",
-    description="API доступен только с определенных доменов (Не касается тестирования и отладки)",
+    description="API для интерактивного проведения олимпиад или хакатонов",
     version=Config.VERSION,
     contact={
         "name": Config.Credentials.CONTACT_NAME,
@@ -25,10 +27,8 @@ app = FastAPI(
 
 socket_broker = SocketBroker()
 socket_broker.register_router(event_socket_router)
+socket_broker.register_router(user_router)
 
-app.state.broker = socket_broker
-
-app.include_router(user_router)
 app.include_router(competition_router)
 app.include_router(templates_router)
 
@@ -63,17 +63,16 @@ async def bot_webhook(update: dict):
 @app.websocket("/connect_user")
 async def handle_connection(
     websocket: WebSocket,
-    auth_data: Annotated[WebAppInitData, Depends(authorize_user_connection)]
+    auth_data: WebAppInitData = Depends(authorize_user_connection)
 ):
-    telegram_data, _ = auth_data
-    await socket_broker.connect(websocket, telegram_data)
+    await socket_broker.connect(websocket, auth_data)
     await socket_broker.handle_websocket(websocket)
 
 
 @app.websocket("/connect_stand")
 async def handle_stand_connection(
     websocket: WebSocket,
-    auth_data: Annotated[StandData, Depends(authorize_stand)]
+    auth_data: StandData = Depends(authorize_stand_connection)
 ):
     await socket_broker.connect_stand(websocket, auth_data)
     await socket_broker.handle_websocket(websocket)

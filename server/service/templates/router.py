@@ -11,14 +11,15 @@ router = APIRouter(
     path="/app",
     response_class=HTMLResponse,
     summary="Шаблон мини-приложения",
-    description="Шаблон мини-приложения для тестирования, не используется в продакшене"
 )
 async def handle_app():
     return FileResponse('templates/app.html')
 
 
 @router.get(
-    path="/client"
+    path="/client",
+    response_class=HTMLResponse,
+    summary="Шаблон клиента"
 )
 async def handle_client():
     return FileResponse('templates/client.html')

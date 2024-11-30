@@ -17,10 +17,10 @@ async def get_user_by_telegram_id(session: AsyncSession, telegram_id: int) -> Us
     return result.scalars().one_or_none()
 
 
-async def get_user_by_id(session: AsyncSession, user_id: int) -> User | None:
+async def get_user_by_public_id(session: AsyncSession, public_id: int) -> User | None:
     result = await session.execute(
         select(User)
-        .where(User.id == user_id)
+        .where(User.public_id == public_id)
     )
 
     return result.scalars().one_or_none()
@@ -51,3 +51,12 @@ async def get_users_in_place(session: AsyncSession) -> Sequence[User]:
     )
 
     return result.scalars().all()
+
+
+async def get_user_count(session: AsyncSession) -> int:
+    result = await session.execute(
+        select(User)
+        .with_only_columns(User.id)
+    )
+
+    return len(result.all())

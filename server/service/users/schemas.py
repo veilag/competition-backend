@@ -6,6 +6,7 @@ from ..competitions.schemas import CompetitionModel
 class RoleModel(BaseModel):
     id: int
     name: str
+    title: str
 
     class Config:
         from_attributes = True
@@ -33,3 +34,14 @@ class UserCreate(BaseModel):
     surname: str
     role_id: int
     competition_id: Optional[int] = None
+
+
+class UserInPlace(BaseModel):
+    id: int
+    name: str
+    surname: str
+    role: RoleModel
+    competition: Optional[CompetitionModel] = None
+
+    class Config:
+        from_attributes = True

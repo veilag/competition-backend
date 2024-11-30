@@ -1,5 +1,8 @@
-from typing import Dict
+from typing import Dict, Tuple
 from aiogram.utils.web_app import WebAppInitData
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from ..users.models import User
 from .payloads import StateChangePayload, NewUserInPlacePayload
 from ...sockets import StandData
 from .constants import Event
@@ -13,8 +16,9 @@ router = SocketRouter()
 async def competition_change(
     event: str,
     data: StateChangePayload,
+    session: AsyncSession,
     websocket: WebSocket,
-    connections: Dict[WebSocket, WebAppInitData],
+    connections: Dict[WebSocket, Tuple[WebAppInitData, User | None]],
     stand_connections: Dict[WebSocket, StandData]
 ):
     for stand_connection in stand_connections:
@@ -23,22 +27,4 @@ async def competition_change(
             "data": {
                 "state": data["state"]
             }
-        })
-
-
-@router.on(Event.NEW_USER_IN_PLACE)
-async def user_in_place(
-    event: str,
-    data: NewUserInPlacePayload,
-    websocket: WebSocket,
-    connections: Dict[WebSocket, WebAppInitData],
-    stand_connections: Dict[WebSocket, StandData]
-):
-    for stand_connection in stand_connections:
-        if stand_connections[stand_connection]["type"] != "registration":
-            continue
-
-        await stand_connection.send_json({
-            "event": Event.NEW_USER_IN_PLACE,
-            "data": data
         })
