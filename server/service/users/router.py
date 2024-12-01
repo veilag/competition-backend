@@ -57,8 +57,8 @@ async def competition_change(
 
             await websocket.send_json({
                 "event": "USERS:REGISTER:RESULT",
+                "status": "success",
                 "data": {
-                    "status": "success",
                     "message": "Пользователь успешно зарегистрирован"
                 }
             })
@@ -77,9 +77,18 @@ async def competition_change(
                 "event": "USERS:REGISTER:RESULT",
                 "data": {
                     "status": "error",
-                    "message": f"Ошибка на стороне сервера: {e}"
+                    "message": f"Ошибка: {e}"
                 }
             })
+            return
+
+    await websocket.send_json({
+        "event": "USERS:REGISTER:RESULT",
+        "status": "error",
+        "data": {
+            "message": "Пользователь уже зарегистрирован"
+        }
+    })
 
 
 @router.on("USERS:GET_IN_PLACE")
@@ -117,7 +126,7 @@ async def fetch_user_count(
     })
 
 
-@router.on("USERS:SET_USER_IN_PLACE")
+@router.on("USERS:SET_IN_PLACE")
 async def user_in_place(
     event: str,
     data: Dict,
@@ -127,16 +136,7 @@ async def user_in_place(
     stand_connections: Dict[WebSocket, StandData]
 ):
     user = await get_user_by_telegram_id(session, connections[websocket].user.id)
-    if not user:
-        await websocket.send_json({
-            "event": "USERS:SET_USER_IN_PLACE:RESULT",
-            "status": "error",
-            "data": {
-                "message": "Проверяющий не зарегистрирован"
-            }
-        })
-
-    if user.role.name == "admin" or user.role.name == "staff":
+    if user.role.type == "admin" or user.role.type == "staff":
         user_to_update = await get_user_by_public_id(session, data.get("public_id"))
         user_to_update.in_place = True
         await session.commit()
@@ -150,7 +150,7 @@ async def user_in_place(
                 })
 
                 await websocket.send_json({
-                    "event": "USERS:SET_USER_IN_PLACE:RESULT",
+                    "event": "USERS:SET_IN_PLACE:RESULT",
                     "status": "success",
                     "data": {
                         "message": "Пользователь отмечен на вход",
@@ -165,3 +165,11 @@ async def user_in_place(
                             "status": "success",
                             "data": UserInPlace.from_orm(user_to_update).dict()
                         })
+    else:
+        await websocket.send_json({
+            "event": "USERS:SET_IN_PLACE:RESULT",
+            "status": "error",
+            "data": {
+                "message": "У вас нет прав на выполнение этого действия",
+            }
+        })

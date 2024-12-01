@@ -8,7 +8,6 @@ from .handlers import admin_router
 from ..database.engine import async_session
 
 dp = Dispatcher()
-
 dp.update.middleware(DbSessionMiddleware(async_session))
 dp.include_router(admin_router)
 

@@ -3,14 +3,19 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import joinedload
 from .utils import generate_public_id
-from .models import User
+from .models import User, Role
 from .schemas import UserCreate
+from ..competitions.models import Competition
 
 
 async def get_user_by_telegram_id(session: AsyncSession, telegram_id: int) -> User | None:
     result = await session.execute(
         select(User)
-        .options(joinedload(User.role))
+        .options(
+            joinedload(User.role),
+            joinedload(User.competition)
+            .joinedload(Competition.state)
+        )
         .where(User.telegram_id == telegram_id)
     )
 
@@ -30,16 +35,9 @@ async def create_user(
     session: AsyncSession,
     user_data: UserCreate
 ):
-    session.add(
-        User(
-            public_id=generate_public_id(),
-            telegram_id=user_data.telegram_id,
-            name=user_data.name,
-            surname=user_data.surname,
-            role_id=user_data.role_id,
-        )
-    )
-
+    user = User(**user_data.dict())
+    user.public_id = generate_public_id()
+    session.add(user)
     await session.commit()
 
 
@@ -60,3 +58,35 @@ async def get_user_count(session: AsyncSession) -> int:
     )
 
     return len(result.all())
+
+
+async def init_roles(session: AsyncSession) -> None:
+    session.add_all([
+        Role(
+            id=1,
+            name='Администратор',
+            type='admin'
+        ),
+        Role(
+            id=2,
+            name='Участник',
+            type='participant'
+        ),
+        Role(
+            id=3,
+            name='Наставник',
+            type='mentor'
+        ),
+        Role(
+            id=4,
+            name='Жюри',
+            type='judge'
+        ),
+        Role(
+            id=5,
+            name='Управляющий',
+            type='staff'
+        ),
+    ])
+
+    await session.commit()

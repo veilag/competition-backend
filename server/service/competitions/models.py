@@ -9,8 +9,10 @@ class Competition(Base):
     """
     __tablename__ = 'competitions'
     id = Column(Integer, primary_key=True, autoincrement=True)
-    title = Column(String, nullable=False)
+    name = Column(String, nullable=False)
     description = Column(Text, nullable=True)
+    task = Column(Text, nullable=True)
+
     state_id = Column(Integer, ForeignKey('states.id'), nullable=True)
     state = relationship("CompetitionState", back_populates="competitions")
     users = relationship("User", back_populates="competition")
@@ -25,13 +27,12 @@ class CompetitionState(Base):
     - breakfast
     - dinner
     - lunch
-    - to_offices
     - in_process
     - checking
     - awarding
     """
     __tablename__ = 'states'
     id = Column(Integer, primary_key=True, autoincrement=True)
-    title = Column(String, nullable=False)
+    name = Column(String, nullable=False)
     type = Column(String, nullable=False)
     competitions = relationship("Competition", back_populates="state")

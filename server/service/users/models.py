@@ -18,7 +18,6 @@ class User(Base):
 
     role_id = Column(Integer, ForeignKey('roles.id'), nullable=False)
     in_place = Column(Boolean, nullable=False, default=False)
-    approved = Column(Boolean, nullable=False, default=False)
     competition_id = Column(Integer, ForeignKey('competitions.id'), nullable=True)
 
     role = relationship("Role", back_populates="users")
@@ -40,5 +39,5 @@ class Role(Base):
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     name = Column(String, unique=True, nullable=False)
-    title = Column(String, unique=True, nullable=False)
+    type = Column(String, unique=True, nullable=False)
     users = relationship("User", back_populates="role")

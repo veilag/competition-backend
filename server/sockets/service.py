@@ -50,6 +50,7 @@ class SocketBroker:
         self.global_handlers: Dict[str, Callable[..., Coroutine[Any, Any, None]]] = {}
 
     async def connect(self, websocket: WebSocket, auth_data: WebAppInitData):
+        print("Connections:", self.active_connections)
         if not self.telegram_id_free(auth_data.user.id):
             self.raise_and_disconnect()
 
@@ -57,6 +58,7 @@ class SocketBroker:
         self.active_connections[websocket] = auth_data
 
     async def connect_stand(self, websocket: WebSocket, stand_data: StandData):
+        print("Stand connections:", self.active_stand_connections)
         if not self.stand_id_free(stand_data["id"]):
             self.raise_and_disconnect()
 
@@ -85,7 +87,7 @@ class SocketBroker:
 
     def telegram_id_free(self, telegram_id: int):
         for connection in self.active_connections:
-            if self.active_connections[connection][0].user.id == telegram_id:
+            if self.active_connections[connection].user.id == telegram_id:
                 return False
 
         return True

@@ -1,13 +1,14 @@
-from typing import Tuple
 from aiogram.types import Update
 from aiogram.utils.web_app import WebAppInitData
 
 from .config import Config
-from .service.users.models import User
 from .service.auth.deps import authorize_user_connection, authorize_stand_connection
+from .service.competitions.crud import init_states
+from .service.users.crud import init_roles
 from .sockets import SocketBroker, StandData
-from .service import templates_router, event_socket_router, user_router, competition_router
+from .service import templates_router, user_router, competition_router, winner_router
 from .database import init_db, init_db_in_dev, engine
+from .database.engine import async_session
 from .bot import bot, dp
 from fastapi import FastAPI, WebSocket, Depends
 
@@ -26,10 +27,10 @@ app = FastAPI(
 )
 
 socket_broker = SocketBroker()
-socket_broker.register_router(event_socket_router)
 socket_broker.register_router(user_router)
+socket_broker.register_router(competition_router)
+socket_broker.register_router(winner_router)
 
-app.include_router(competition_router)
 app.include_router(templates_router)
 
 WEBHOOK_PATH = f"/bot/{Config.TELEGRAM_TOKEN}"
@@ -44,11 +45,15 @@ async def on_startup():
 
     await init_db_in_dev()
 
-    webhook_info = await bot.get_webhook_info()
-    if webhook_info.url != WEBHOOK_URL:
-        await bot.set_webhook(
-            url=WEBHOOK_URL
-        )
+    async with async_session() as session:
+        await init_states(session)
+        await init_roles(session)
+
+    # webhook_info = await bot.get_webhook_info()
+    # if webhook_info.url != WEBHOOK_URL:
+    #     await bot.set_webhook(
+    #         url=WEBHOOK_URL
+    #     )
 
 
 @app.post(

@@ -5,8 +5,8 @@ from ..competitions.schemas import CompetitionModel
 
 class RoleModel(BaseModel):
     id: int
+    type: str
     name: str
-    title: str
 
     class Config:
         from_attributes = True
@@ -19,7 +19,6 @@ class UserModel(BaseModel):
     name: str
     surname: str
     in_place: bool
-    approved: bool
 
     role: RoleModel
     competition: Optional[CompetitionModel] = None
