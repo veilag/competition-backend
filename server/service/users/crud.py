@@ -2,6 +2,8 @@ from typing import Sequence
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import joinedload
+
+from ...config import Config
 from .utils import generate_public_id
 from .models import User, Role
 from .schemas import UserCreate
@@ -79,7 +81,7 @@ async def get_user_count(session: AsyncSession) -> int:
     return len(result.all())
 
 
-async def init__users_and_roles(session: AsyncSession) -> None:
+async def init_users_and_roles(session: AsyncSession) -> None:
     session.add_all([
         Role(
             id=1,
@@ -107,5 +109,18 @@ async def init__users_and_roles(session: AsyncSession) -> None:
             type='staff'
         ),
     ])
+
+    await session.commit()
+
+    session.add(
+        User(
+            telegram_id=Config.TELEGRAM_ADMIN_ID,
+            public_id=generate_public_id(),
+            name=Config.TELEGRAM_ADMIN_NAME,
+            surname=Config.TELEGRAM_ADMIN_SURNAME,
+            role_id=1,
+            in_place=True
+        )
+    )
 
     await session.commit()

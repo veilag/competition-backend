@@ -14,6 +14,9 @@ class Config:
 
     TELEGRAM_TOKEN: str = getenv("TELEGRAM_TOKEN")
     TELEGRAM_ADMIN_ID: int = int(getenv("TELEGRAM_ADMIN_ID"))
+    TELEGRAM_ADMIN_NAME: str = getenv("TELEGRAM_ADMIN_NAME")
+    TELEGRAM_ADMIN_SURNAME: str = getenv("TELEGRAM_ADMIN_SURNAME")
+
     STAND_TOKEN: str = getenv("STAND_TOKEN")
 
     class Credentials:

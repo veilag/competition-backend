@@ -4,9 +4,9 @@ from aiogram.utils.web_app import WebAppInitData
 from .config import Config
 from .service.auth.deps import authorize_user_connection, authorize_stand_connection
 from .service.competitions.crud import init_states
-from .service.users.crud import init_roles
+from .service.users.crud import init_users_and_roles
 from .sockets import SocketBroker, StandData
-from .service import templates_router, user_router, competition_router, winner_router
+from .service import user_router, competition_router, winner_router
 from .database import init_db, init_db_in_dev, engine
 from .database.engine import async_session
 from .bot import bot, dp
@@ -31,29 +31,31 @@ socket_broker.register_router(user_router)
 socket_broker.register_router(competition_router)
 socket_broker.register_router(winner_router)
 
-app.include_router(templates_router)
-
 WEBHOOK_PATH = f"/bot/{Config.TELEGRAM_TOKEN}"
 WEBHOOK_URL = f"{Config.SERVER_DOMAIN}{WEBHOOK_PATH}"
 
 
 @app.on_event("startup")
 async def on_startup():
+    webhook_info = await bot.get_webhook_info()
+    if webhook_info.url != WEBHOOK_URL:
+        await bot.set_webhook(
+            url=WEBHOOK_URL
+        )
+
     if Config.MODE == "PROD":
         await init_db()
+
+        async with async_session() as session:
+            await init_states(session)
+            await init_users_and_roles(session)
+
         return
 
     await init_db_in_dev()
-
     async with async_session() as session:
         await init_states(session)
-        await init_roles(session)
-
-    # webhook_info = await bot.get_webhook_info()
-    # if webhook_info.url != WEBHOOK_URL:
-    #     await bot.set_webhook(
-    #         url=WEBHOOK_URL
-    #     )
+        await init_users_and_roles(session)
 
 
 @app.post(
