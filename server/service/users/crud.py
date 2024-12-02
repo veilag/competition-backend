@@ -79,7 +79,7 @@ async def get_user_count(session: AsyncSession) -> int:
     return len(result.all())
 
 
-async def init_roles(session: AsyncSession) -> None:
+async def init__users_and_roles(session: AsyncSession) -> None:
     session.add_all([
         Role(
             id=1,

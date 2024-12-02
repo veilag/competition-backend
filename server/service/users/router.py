@@ -52,6 +52,19 @@ async def competition_change(
         return
 
     user = await get_user_by_telegram_id(session, connections[websocket].user.id)
+
+    if user.role_id == 1:
+        await create_user(session, UserCreate(**data))
+
+        await websocket.send_json({
+            "event": "USERS:REGISTER:RESULT",
+            "status": "success",
+            "data": {
+                "message": "Пользователь успешно зарегистрирован"
+            }
+        })
+        return
+
     data["telegram_id"] = connections[websocket].user.id
 
     if not user:
