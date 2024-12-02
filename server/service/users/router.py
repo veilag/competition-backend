@@ -48,14 +48,11 @@ async def competition_change(
     connections: Dict[WebSocket, WebAppInitData],
     stand_connections: Dict[WebSocket, StandData]
 ):
-    if data.get("role_id") == 1 or data.get("role_id") == 5:
-        return
-
     user = await get_user_by_telegram_id(session, connections[websocket].user.id)
 
-    data["telegram_id"] = connections[websocket].user.id
-
     if not user:
+        data["telegram_id"] = connections[websocket].user.id
+
         try:
             await create_user(session, UserCreate(**data))
             await session.commit()
