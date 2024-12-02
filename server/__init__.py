@@ -1,5 +1,6 @@
 from aiogram.types import Update
 from aiogram.utils.web_app import WebAppInitData
+from sqlalchemy.exc import IntegrityError
 
 from .config import Config
 from .service.auth.deps import authorize_user_connection, authorize_stand_connection
@@ -46,16 +47,16 @@ async def on_startup():
     if Config.MODE == "PROD":
         await init_db()
 
-        async with async_session() as session:
+    else:
+        await init_db_in_dev()
+
+    async with async_session() as session:
+        try:
             await init_states(session)
             await init_users_and_roles(session)
 
-        return
-
-    await init_db_in_dev()
-    async with async_session() as session:
-        await init_states(session)
-        await init_users_and_roles(session)
+        except IntegrityError:
+            print("DATABASE INIT VALUES ALREADY EXISTS")
 
 
 @app.post(
