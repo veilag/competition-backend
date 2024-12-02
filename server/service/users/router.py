@@ -88,15 +88,25 @@ async def competition_change(
     else:
         if user.role_id == 1:
             await create_user(session, UserCreate(**data))
+            try:
+                await websocket.send_json({
+                    "event": "USERS:REGISTER:RESULT",
+                    "status": "success",
+                    "data": {
+                        "message": "Пользователь успешно зарегистрирован"
+                    }
+                })
+                return
 
-            await websocket.send_json({
-                "event": "USERS:REGISTER:RESULT",
-                "status": "success",
-                "data": {
-                    "message": "Пользователь успешно зарегистрирован"
-                }
-            })
-            return
+            except IntegrityError as e:
+                await websocket.send_json({
+                    "event": "USERS:REGISTER:RESULT",
+                    "data": {
+                        "status": "error",
+                        "message": f"Ошибка: {e}"
+                    }
+                })
+                return
 
     await websocket.send_json({
         "event": "USERS:REGISTER:RESULT",
