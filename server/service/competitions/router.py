@@ -81,7 +81,7 @@ async def competition_change(
     stand_connections: Dict[WebSocket, StandData]
 ):
     user = await get_user_by_telegram_id(session, connections[websocket].user.id)
-    if user.role.name == "admin":
+    if user.role.type == "admin":
         state = await get_state(session, data.get("state_id"))
         await change_competitions_state(session, data.get("state_id"))
 

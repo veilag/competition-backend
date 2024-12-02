@@ -1,4 +1,5 @@
 import asyncio
+from json import JSONDecodeError
 from typing import Dict, Callable, Coroutine, Any, List, TypedDict, Tuple
 from aiogram.utils.web_app import WebAppInitData
 from fastapi import WebSocket, WebSocketDisconnect, WebSocketException, status
@@ -98,27 +99,37 @@ class SocketBroker:
     async def handle_websocket(self, websocket: WebSocket):
         try:
             while True:
-                data = await websocket.receive_json()
-                event = data.get("event")
-                payload = data.get("data")
+                try:
+                    data = await websocket.receive_json()
 
-                if not event:
-                    await websocket.send_json({"error": "Не указано событие"})
-                    continue
+                    event = data.get("event")
+                    payload = data.get("data")
 
-                handler = self.global_handlers.get(event)
-                if handler:
-                    async with async_session() as session:
-                        await handler(
-                            event,
-                            payload,
-                            session,
-                            websocket,
-                            self.active_connections,
-                            self.active_stand_connections
-                        )
-                else:
-                    await websocket.send_json({"error": f"Сервер не поддерживает такое событие: {event}"})
+                    if not event:
+                        await websocket.send_json({"error": "Не указано событие"})
+                        continue
+
+                    handler = self.global_handlers.get(event)
+                    if handler:
+                        async with async_session() as session:
+                            await handler(
+                                event,
+                                payload,
+                                session,
+                                websocket,
+                                self.active_connections,
+                                self.active_stand_connections
+                            )
+                    else:
+                        await websocket.send_json({"error": f"Сервер не поддерживает такое событие: {event}"})
+
+                except JSONDecodeError:
+                    await websocket.send_json({
+                        "event": "JSON_PARSE_ERROR",
+                        "data": {
+                            "message": "Ошибка во время сериализации сообщения"
+                        }
+                    })
 
         except WebSocketDisconnect:
             self.disconnect(websocket)

@@ -10,27 +10,12 @@
 </head>
 <body>
   <div style="margin-top: 30px;">
-    <button>Fetch</button>
+    <div class="token"></div>
   </div>
 
   <script>
-    window.Telegram.WebApp.expand()
-    window.Telegram.WebApp.requestFullscreen()
-
-    console.log(window.Telegram.WebApp.initData)
-
-    const button = document.querySelector("button")
-
-    button.addEventListener("click", () => {
-        fetch("/users/me", {
-            method: "GET",
-            headers: {
-                "X-Telegram-Auth": window.Telegram.WebApp.initData
-            }
-        })
-            .then(res => res.json())
-            .then(data => console.log(data))
-    })
+    const container = document.querySelector(".token")
+    container.textContent = window.Telegram.WebApp.initData
   </script>
 </body>
 </html>

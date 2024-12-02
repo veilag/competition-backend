@@ -25,7 +25,26 @@ async def get_user_by_telegram_id(session: AsyncSession, telegram_id: int) -> Us
 async def get_user_by_public_id(session: AsyncSession, public_id: int) -> User | None:
     result = await session.execute(
         select(User)
+        .options(
+            joinedload(User.role),
+            joinedload(User.competition)
+            .joinedload(Competition.state)
+        )
         .where(User.public_id == public_id)
+    )
+
+    return result.scalars().one_or_none()
+
+
+async def get_user_by_id(session: AsyncSession, user_id: int) -> User | None:
+    result = await session.execute(
+        select(User)
+        .options(
+            joinedload(User.role),
+            joinedload(User.competition)
+            .joinedload(Competition.state)
+        )
+        .where(User.id == user_id)
     )
 
     return result.scalars().one_or_none()

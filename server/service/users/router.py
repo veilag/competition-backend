@@ -48,7 +48,11 @@ async def competition_change(
     connections: Dict[WebSocket, WebAppInitData],
     stand_connections: Dict[WebSocket, StandData]
 ):
+    if data.get("role_id") == 1 or data.get("role_id") == 5:
+        return
+
     user = await get_user_by_telegram_id(session, connections[websocket].user.id)
+    data["telegram_id"] = connections[websocket].user.id
 
     if not user:
         try:
@@ -62,6 +66,7 @@ async def competition_change(
                     "message": "Пользователь успешно зарегистрирован"
                 }
             })
+
             for stand_connection in stand_connections:
                 if stand_connections[stand_connection]["type"] == "registration":
                     await stand_connection.send_json({
