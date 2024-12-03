@@ -1,0 +1,6 @@
+[submodule "stands-client"]
+	path = stands-client
+	url = https://github.com/veilag/competitions-stands-client.git
+[submodule "mini-app"]
+	path = mini-app
+	url = https://github.com/veilag/competitions-mini-app.git
