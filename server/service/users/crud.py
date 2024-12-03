@@ -65,7 +65,11 @@ async def create_user(
 async def get_users_in_place(session: AsyncSession) -> Sequence[User]:
     result = await session.execute(
         select(User)
-        .options(joinedload(User.role), joinedload(User.competition))
+        .options(
+            joinedload(User.role),
+            joinedload(User.competition)
+            .joinedload(Competition.state)
+        )
         .where(User.in_place)
     )
 
