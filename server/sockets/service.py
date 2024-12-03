@@ -51,9 +51,9 @@ class SocketBroker:
         self.global_handlers: Dict[str, Callable[..., Coroutine[Any, Any, None]]] = {}
 
     async def connect(self, websocket: WebSocket, auth_data: WebAppInitData):
-        self.disconnect_previous_telegram_connections(auth_data.user.id)
-        await websocket.accept()
+        await self.disconnect_previous_telegram_connections(auth_data.user.id)
 
+        await websocket.accept()
         self.active_connections[websocket] = auth_data
 
     async def connect_stand(self, websocket: WebSocket, stand_data: StandData):
@@ -63,14 +63,12 @@ class SocketBroker:
         await websocket.accept()
         self.active_stand_connections[websocket] = stand_data
 
-    async def disconnect(self, websocket: WebSocket):
+    def disconnect(self, websocket: WebSocket):
         if websocket in self.active_connections:
             del self.active_connections[websocket]
 
         if websocket in self.active_stand_connections:
             del self.active_stand_connections[websocket]
-
-        await websocket.close()
 
     def register_router(self, router: SocketRouter):
         for event, handler in router.handlers.items():
@@ -85,10 +83,15 @@ class SocketBroker:
 
         return True
 
-    def disconnect_previous_telegram_connections(self, telegram_id: int):
-        for connection in self.active_connections:
-            if self.active_connections[connection].user.id == telegram_id:
-                self.disconnect(connection)
+    async def disconnect_previous_telegram_connections(self, telegram_id: int):
+        closed_connections: List[WebSocket] = [
+            connection for connection in self.active_connections
+            if self.active_connections[connection].user.id == telegram_id
+        ]
+
+        for connection in closed_connections:
+            del self.active_connections[connection]
+            await connection.close()
 
     def raise_and_disconnect(self):
         raise WebSocketException(code=status.WS_1008_POLICY_VIOLATION)
@@ -129,4 +132,4 @@ class SocketBroker:
                     })
 
         except WebSocketDisconnect:
-            await self.disconnect(websocket)
+            self.disconnect(websocket)
