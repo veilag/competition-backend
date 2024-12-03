@@ -11,9 +11,8 @@ class Competition(Base):
     id = Column(Integer, primary_key=True, autoincrement=True)
     name = Column(String, nullable=False)
     description = Column(Text, nullable=True)
-    task = Column(Text, nullable=True)
-
     state_id = Column(Integer, ForeignKey('states.id'), nullable=True)
+
     state = relationship("CompetitionState", back_populates="competitions")
     users = relationship("User", back_populates="competition")
 

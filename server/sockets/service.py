@@ -51,27 +51,26 @@ class SocketBroker:
         self.global_handlers: Dict[str, Callable[..., Coroutine[Any, Any, None]]] = {}
 
     async def connect(self, websocket: WebSocket, auth_data: WebAppInitData):
-        print("Connections:", self.active_connections)
-        if not self.telegram_id_free(auth_data.user.id):
-            self.raise_and_disconnect()
-
+        self.disconnect_previous_telegram_connections(auth_data.user.id)
         await websocket.accept()
+
         self.active_connections[websocket] = auth_data
 
     async def connect_stand(self, websocket: WebSocket, stand_data: StandData):
-        print("Stand connections:", self.active_stand_connections)
         if not self.stand_id_free(stand_data["id"]):
             self.raise_and_disconnect()
 
         await websocket.accept()
         self.active_stand_connections[websocket] = stand_data
 
-    def disconnect(self, websocket: WebSocket):
+    async def disconnect(self, websocket: WebSocket):
         if websocket in self.active_connections:
             del self.active_connections[websocket]
 
         if websocket in self.active_stand_connections:
             del self.active_stand_connections[websocket]
+
+        await websocket.close()
 
     def register_router(self, router: SocketRouter):
         for event, handler in router.handlers.items():
@@ -86,12 +85,10 @@ class SocketBroker:
 
         return True
 
-    def telegram_id_free(self, telegram_id: int):
+    def disconnect_previous_telegram_connections(self, telegram_id: int):
         for connection in self.active_connections:
             if self.active_connections[connection].user.id == telegram_id:
-                return False
-
-        return True
+                self.disconnect(connection)
 
     def raise_and_disconnect(self):
         raise WebSocketException(code=status.WS_1008_POLICY_VIOLATION)
@@ -132,4 +129,4 @@ class SocketBroker:
                     })
 
         except WebSocketDisconnect:
-            self.disconnect(websocket)
+            await self.disconnect(websocket)

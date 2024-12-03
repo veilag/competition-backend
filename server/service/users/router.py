@@ -127,6 +127,7 @@ async def fetch_user_count(
     stand_connections: Dict[WebSocket, StandData]
 ):
     users = await get_users_in_place(session)
+
     await websocket.send_json({
         "event": "USERS:GET_IN_PLACE:RESULT",
         "data": {
