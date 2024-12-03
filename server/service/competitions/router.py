@@ -62,7 +62,7 @@ async def competition_state(
     state = await get_current_state(session)
 
     await websocket.send_json({
-        "event": "COMPETITIONS:GET_STATE",
+        "event": "COMPETITIONS:GET_STATE:RESULT",
         "data": {
             "state": StateModel.from_orm(state).dict()
         }

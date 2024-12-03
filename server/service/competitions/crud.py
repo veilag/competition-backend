@@ -53,7 +53,7 @@ async def init_states(session: AsyncSession) -> None:
     session.add_all([
         CompetitionState(
             id=1,
-            name="Старт",
+            name="Олимпиада не начата",
             type="start"
         ),
         CompetitionState(
