@@ -4,7 +4,7 @@ from starlette.websockets import WebSocket
 from aiogram.utils.web_app import WebAppInitData
 from ...sockets.service import StandData
 from ...sockets import SocketRouter
-from .crud import get_revealed_winners_by_competition, create_winner, get_winners_by_competitions, update_winners_reveal_by_competition
+from .crud import (get_revealed_winners_by_competition, create_winner, update_nomination_winner_reveal_by_competition, update_winner_reveal_by_competition, get_winner_by_place, get_nomination_winner)
 from ..users.crud import get_user_by_public_id
 from .schemas import WinnerModel
 
@@ -54,8 +54,8 @@ async def set_user_as_winner(
     })
 
 
-@router.on("WINNERS:REVEAL_COMPETITION")
-async def reveal_winner(
+@router.on("WINNERS:SET_NOMINATION_USER")
+async def set_user_as_winner(
     event: str,
     data: Dict,
     session: AsyncSession,
@@ -63,19 +63,35 @@ async def reveal_winner(
     connections: Dict[WebSocket, WebAppInitData],
     stand_connections: Dict[WebSocket, StandData]
 ):
-    winners = await get_winners_by_competitions(session, data.get("competition_id"))
-    await update_winners_reveal_by_competition(session, data.get("competition_id"))
+    user = await get_user_by_public_id(session, data.get("public_id"))
 
-    winner_ids = {winner.user.telegram_id for winner in winners}
-    winner_details = [{
-        "telegram_id": winner.user.telegram_id,
-        "name": winner.user.name,
-        "surname": winner.user.surname,
-        "place": winner.place
-    } for winner in winners]
+    await create_winner(
+        session,
+        user.competition_id,
+        user.id,
+        data.get("place")
+    )
+
+    await websocket.send_json({
+        "event": "WINNERS:SET_USER:RESULT",
+        "status": "success",
+        "data": None
+    })
+
+
+@router.on("WINNERS:REVEAL_COMPETITION_WINNER")
+async def reveal_competition_winner(
+    event: str,
+    data: Dict,
+    session: AsyncSession,
+    websocket: WebSocket,
+    connections: Dict[WebSocket, WebAppInitData],
+    stand_connections: Dict[WebSocket, StandData]
+):
+    winner = await get_winner_by_place(session, data.get("competition_id"), data.get("place"))
 
     for connection in connections:
-        if connections[connection].user.id in winner_ids:
+        if connections[connection].user.id == winner.user.telegram_id:
             await connection.send_json({
                 "event": "WINNERS:TOKE_PLACE",
                 "data": None
@@ -86,6 +102,45 @@ async def reveal_winner(
                 "event": "WINNERS:PLACE_REVEAL",
                 "data": {
                     "competition_id": data.get("competition_id"),
-                    "winners": winner_details
+                    "place": data.get("place"),
+                    "winner": {
+                        "name": winner.user.name,
+                        "surname": winner.user.surname,
+                    }
                 }
             })
+
+    await update_winner_reveal_by_competition(session, data.get("competition_id"), data.get("place"))
+
+
+@router.on("WINNERS:REVEAL_COMPETITION_NOMINATION_WINNER")
+async def reveal_competition_nomination_winner(
+    event: str,
+    data: Dict,
+    session: AsyncSession,
+    websocket: WebSocket,
+    connections: Dict[WebSocket, WebAppInitData],
+    stand_connections: Dict[WebSocket, StandData]
+):
+    nomination_winner = await get_nomination_winner(session, data.get("competition_id"), data.get("name"))
+
+    for connection in connections:
+        if connections[connection].user.id == nomination_winner.user.telegram_id:
+            await connection.send_json({
+                "event": "WINNERS:NOMINATION_TOKE_PLACE",
+                "data": None
+            })
+
+        else:
+            await connection.send_json({
+                "event": "WINNERS:NOMINATION_REVEAL",
+                "data": {
+                    "competition_id": data.get("competition_id"),
+                    "winner": {
+                        "name": nomination_winner.user.name,
+                        "surname": nomination_winner.user.surname,
+                    }
+                }
+            })
+
+    await update_nomination_winner_reveal_by_competition(session, data.get("competition_id"), data.get("name"))

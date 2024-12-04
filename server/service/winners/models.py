@@ -24,3 +24,5 @@ class NominationWinner(Base):
 
     name = Column(String, nullable=False)
     revealed = Column(Boolean, nullable=False, default=False)
+
+    user = relationship("User")
