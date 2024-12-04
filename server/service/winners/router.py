@@ -7,7 +7,7 @@ from ...sockets import SocketRouter
 from .crud import (
     get_revealed_winners_by_competition, create_winner,
     update_nomination_winner_reveal_by_competition, update_winner_reveal_by_competition,
-    get_winner_by_place, get_nomination_winner,
+    get_winner_by_place, get_nomination_winner, create_nomination_winner,
     get_winners_by_competitions, get_nomination_winners_by_competitions
 )
 from ..users.crud import get_user_by_id
@@ -61,7 +61,7 @@ async def set_user_as_winner(
 
 
 @router.on("WINNERS:SET_NOMINATION_USER")
-async def set_user_as_winner(
+async def set_user_as_nomination_winner(
     event: str,
     data: Dict,
     session: AsyncSession,
@@ -71,15 +71,15 @@ async def set_user_as_winner(
 ):
     user = await get_user_by_id(session, data.get("user_id"))
 
-    await create_winner(
+    await create_nomination_winner(
         session,
         user.competition_id,
         user.id,
-        data.get("place")
+        data.get("name")
     )
 
     await websocket.send_json({
-        "event": "WINNERS:SET_USER:RESULT",
+        "event": "WINNERS:SET_NOMINATION_USER:RESULT",
         "status": "success",
         "data": None
     })
