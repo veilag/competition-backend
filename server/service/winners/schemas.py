@@ -22,7 +22,17 @@ class UserModel(BaseModel):
 
 class WinnerModel(BaseModel):
     user: UserModel
+    revealed: bool
     place: int
+
+    class Config:
+        from_attributes = True
+
+
+class NominationWinnerModel(BaseModel):
+    name: str
+    revealed: bool
+    user: UserModel
 
     class Config:
         from_attributes = True

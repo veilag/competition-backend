@@ -61,6 +61,19 @@ async def get_winners_by_competitions(session: AsyncSession, competition_id: int
     return query.scalars().all()
 
 
+async def get_nomination_winners_by_competitions(session: AsyncSession, competition_id: int) -> Sequence[NominationWinner]:
+    query = await session.execute(
+        select(NominationWinner)
+        .options(
+            joinedload(NominationWinner.user)
+            .joinedload(User.competition)
+        )
+        .where(NominationWinner.competition_id == competition_id)
+    )
+
+    return query.scalars().all()
+
+
 async def get_winner_by_place(session: AsyncSession, competition_id: int, place: int) -> Winner:
     query = await session.execute(
         select(Winner)
