@@ -6,7 +6,7 @@ from starlette.websockets import WebSocket
 from ...sockets.service import StandData
 from ...sockets import SocketRouter
 from .schemas import UserModel, UserCreate, UserInPlace
-from .crud import get_users_in_place, create_user, get_user_count, get_user_by_telegram_id, get_user_by_public_id
+from .crud import get_users_in_place, create_user, get_user_count, get_user_by_telegram_id, get_user_by_public_id, get_all_users
 
 router = SocketRouter()
 
@@ -118,7 +118,7 @@ async def competition_change(
 
 
 @router.on("USERS:GET_IN_PLACE")
-async def fetch_user_count(
+async def users_in_place(
     event: str,
     data: Dict,
     session: AsyncSession,
@@ -136,8 +136,25 @@ async def fetch_user_count(
     })
 
 
+@router.on("USERS:GET_ALL")
+async def all_users(
+    event: str,
+    data: Dict,
+    session: AsyncSession,
+    websocket: WebSocket,
+    connections: Dict[WebSocket, WebAppInitData],
+    stand_connections: Dict[WebSocket, StandData]
+):
+    await websocket.send_json({
+        "event": "USERS:GET_ALL",
+        "data": {
+            "users": await get_all_users(session)
+        }
+    })
+
+
 @router.on("USERS:GET_COUNT")
-async def fetch_user_count(
+async def user_count(
     event: str,
     data: Dict,
     session: AsyncSession,

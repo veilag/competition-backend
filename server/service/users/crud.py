@@ -76,6 +76,20 @@ async def get_users_in_place(session: AsyncSession) -> Sequence[User]:
     return result.scalars().all()
 
 
+async def get_all_users(session: AsyncSession) -> Sequence[User]:
+    result = await session.execute(
+        select(User)
+        .options(
+            joinedload(User.role),
+            joinedload(User.competition)
+            .joinedload(Competition.state)
+        )
+    )
+
+    return result.scalars().all()
+
+
+
 async def get_user_count(session: AsyncSession) -> int:
     result = await session.execute(
         select(User)
