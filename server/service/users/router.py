@@ -145,10 +145,12 @@ async def all_users(
     connections: Dict[WebSocket, WebAppInitData],
     stand_connections: Dict[WebSocket, StandData]
 ):
+    users = await get_all_users(session)
+
     await websocket.send_json({
-        "event": "USERS:GET_ALL",
+        "event": "USERS:GET_ALL:RESULT",
         "data": {
-            "users": await get_all_users(session)
+            "users": [UserModel.from_orm(user).dict() for user in users]
         }
     })
 

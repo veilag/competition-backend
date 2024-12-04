@@ -45,6 +45,7 @@ async def set_user_as_winner(
     stand_connections: Dict[WebSocket, StandData]
 ):
     user = await get_user_by_id(session, data.get("user_id"))
+
     await create_winner(
         session,
         user.competition_id,
