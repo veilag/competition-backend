@@ -108,10 +108,7 @@ async def reveal_competition_winner(
                 "data": {
                     "competition_id": data.get("competition_id"),
                     "place": data.get("place"),
-                    "winner": {
-                        "name": winner.user.name,
-                        "surname": winner.user.surname,
-                    }
+                    "winner": WinnerModel.from_orm(winner).dict()
                 }
             })
 
@@ -121,10 +118,7 @@ async def reveal_competition_winner(
                 "data": {
                     "competition_id": data.get("competition_id"),
                     "place": data.get("place"),
-                    "winner": {
-                        "name": winner.user.name,
-                        "surname": winner.user.surname,
-                    }
+                    "winner": WinnerModel.from_orm(winner).dict()
                 }
             })
 
@@ -153,10 +147,7 @@ async def reveal_competition_nomination_winner(
                 "event": "WINNERS:NOMINATION_REVEAL",
                 "data": {
                     "competition_id": data.get("competition_id"),
-                    "winner": {
-                        "name": nomination_winner.user.name,
-                        "surname": nomination_winner.user.surname,
-                    }
+                    "winner": NominationWinnerModel.from_orm(nomination_winner).dict()
                 }
             })
 
@@ -165,10 +156,7 @@ async def reveal_competition_nomination_winner(
                 "event": "WINNERS:NOMINATION_REVEAL",
                 "data": {
                     "competition_id": data.get("competition_id"),
-                    "winner": {
-                        "name": nomination_winner.user.name,
-                        "surname": nomination_winner.user.surname,
-                    }
+                    "winner": NominationWinnerModel.from_orm(nomination_winner).dict()
                 }
             })
 
