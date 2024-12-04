@@ -182,8 +182,13 @@ async def user_in_place(
     stand_connections: Dict[WebSocket, StandData]
 ):
     user = await get_user_by_telegram_id(session, connections[websocket].user.id)
+
     if user.role.type == "admin" or user.role.type == "staff":
         user_to_update = await get_user_by_public_id(session, data.get("public_id"))
+
+        if not user_to_update:
+            return
+
         user_to_update.in_place = True
         await session.commit()
 

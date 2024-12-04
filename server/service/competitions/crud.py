@@ -109,7 +109,7 @@ async def init_states(session: AsyncSession) -> None:
         ),
         Competition(
             id=2,
-            name="Программное решение",
+            name="Программные решение",
             description="Олимпиада по программным решениям",
             state_id=1
         ),
