@@ -103,6 +103,18 @@ async def reveal_competition_winner(
                 "data": None
             })
 
+            await connection.send_json({
+                "event": "WINNERS:PLACE_REVEAL",
+                "data": {
+                    "competition_id": data.get("competition_id"),
+                    "place": data.get("place"),
+                    "winner": {
+                        "name": winner.user.name,
+                        "surname": winner.user.surname,
+                    }
+                }
+            })
+
         else:
             await connection.send_json({
                 "event": "WINNERS:PLACE_REVEAL",
@@ -135,6 +147,17 @@ async def reveal_competition_nomination_winner(
             await connection.send_json({
                 "event": "WINNERS:NOMINATION_TOKE_PLACE",
                 "data": None
+            })
+
+            await connection.send_json({
+                "event": "WINNERS:NOMINATION_REVEAL",
+                "data": {
+                    "competition_id": data.get("competition_id"),
+                    "winner": {
+                        "name": nomination_winner.user.name,
+                        "surname": nomination_winner.user.surname,
+                    }
+                }
             })
 
         else:
