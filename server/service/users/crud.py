@@ -84,6 +84,7 @@ async def get_all_users(session: AsyncSession) -> Sequence[User]:
             joinedload(User.competition)
             .joinedload(Competition.state)
         )
+        .where(User.role_id == 2)
     )
 
     return result.scalars().all()
